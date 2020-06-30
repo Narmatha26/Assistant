@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.view.View;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     TextView userTextView;
     TextView agentTextView;
     TextToSpeech tts;
+    String searchEngine;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +58,40 @@ public class MainActivity extends AppCompatActivity {
                 tts.speak(result.getResult().getFulfillment().getSpeech(), TextToSpeech.QUEUE_ADD, null);
                 agentTextView.setText(result.getResult().getFulfillment().getSpeech());
                 userTextView.setText(result.getResult().getResolvedQuery());
+
+                if(result.getResult().equals("websearch")){
+                    String query = result.getResult().getStringParameter("any","none");
+                    if(!query.equals("none")) {
+                        searchEngine = result.getResult().getStringParameter("search-engine", "google");
+                        String url = "";
+                        if (searchEngine.equals("google")) {
+                            url = "https://www.google.co.in/search?q=" + query;
+                        } else if (searchEngine.equals("yahoo")) {
+                            url = "https://in.search.yahoo.com/search?p=" + query;
+                        } else if (searchEngine.equals("bing")) {
+                            url = "https://www.bing.com/search?q=" + query;
+                        }
+
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setData(Uri.parse(url));
+                        startActivity(intent);
+                    }
+                }else if(result.getResult().getAction().equals("websearchfollowup")){
+                    String query = result.getResult().getStringParameter("any");
+                    if(!query.equals("none")) {
+                        String url = "";
+                        if (searchEngine.equals("google")) {
+                            url = "https://www.google.co.in/search?q=" + query;
+                        } else if (searchEngine.equals("yahoo")) {
+                            url = "https://in.search.yahoo.com/search?p=" + query;
+                        } else if (searchEngine.equals("bing")) {
+                            url = "https://www.bing.com/search?q=" + query;
+                        }
+
+                        Intent intent = new Intent(Intent.ACTION_WEB_SEARCH, Uri.parse(url));
+                        startActivity(intent);
+                    }
+                }
             }
 
             @Override
